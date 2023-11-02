@@ -754,34 +754,6 @@ export const RuleTemplateProps = [
       "updated_by ": "sys",
       "updated_date ": "13-Oct",
       "": ""
-    },
-    {
-      "rule_template_prop_id ": "",
-      "rule_template_id ": "",
-      "rule_template_prop_key ": "",
-      "rule_template_prop_type ": "",
-      "rule_template_prop_value": "",
-      "rule_template_prop_desc": "",
-      "is_mandatory": "",
-      "created_by ": "",
-      "created_date ": "",
-      "updated_by ": "",
-      "updated_date ": "",
-      "": ""
-    },
-    {
-      "rule_template_prop_id ": "",
-      "rule_template_id ": "",
-      "rule_template_prop_key ": "",
-      "rule_template_prop_type ": "",
-      "rule_template_prop_value": "",
-      "rule_template_prop_desc": "",
-      "is_mandatory": "",
-      "created_by ": "",
-      "created_date ": "",
-      "updated_by ": "",
-      "updated_date ": "",
-      "": ""
     }
   ]
 
