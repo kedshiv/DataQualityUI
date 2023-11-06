@@ -6,6 +6,7 @@ import Entity from './pages/entity/entity';
 import Rule from './pages/rule/rule';
 import RuleSet from './pages/ruleSet/ruleset';
 import Sidebar from './components/Sidebar/Sidebar';
+import LandingPage from "./pages/landingPage/landingPage";
 
 const { Content } = Layout;
 
@@ -17,7 +18,7 @@ const App: React.FC = () => {
         <Layout>
           <Content style={{ margin: '16px' }}>
             <Routes>
-              <Route path="/" element={<div>Home Page</div>} />
+              <Route path="/" element={<LandingPage />} />
               <Route path="/entity" element={<Entity />} />
               <Route path="/ruleset" element={<RuleSet />} />
               <Route path="/rule" element={<Rule />} />
