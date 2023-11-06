@@ -3,6 +3,9 @@ import { Table, Button, Modal, Form, Input, Select, Space, Row, Col } from 'antd
 import styles from './entity.module.scss'
 import EntityForm from '../../components/EntityForm/EntityForm';
 import { formatString } from '../../common/utilities/utils';
+import NiceModal from '@ebay/nice-modal-react';
+import { IEntityTemplate } from '../../interfaces';
+import EntityDetailsModal from '../../components/EntityDetails/EntityDetailsModal';
 
 
 const Entity = () => {
@@ -49,9 +52,9 @@ const Entity = () => {
     {
       title: 'Actions',
       key: 'actions',
-      render: () => (
+      render: (record: IEntityTemplate) => (
         <Space size="middle">
-          <a>View</a>
+          <a onClick={() => showEntityDetails(record)}>View</a>
           <a>Edit</a>
           <a>Delete</a>
         </Space>
@@ -76,6 +79,11 @@ const Entity = () => {
 
   const handleCancel = () => {
     setIsModalVisible(false);
+  };
+
+  const showEntityDetails = (entity: any) => {
+    console.log(entity);
+    NiceModal.show(EntityDetailsModal, { entity });
   };
 
   return (
