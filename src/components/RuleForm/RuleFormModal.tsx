@@ -1,5 +1,17 @@
 import React, { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
-import { Form, Input, Button, Row, Col, Select, Table, FormInstance, Modal } from 'antd';
+import {
+  Form,
+  Input,
+  Button,
+  Row,
+  Col,
+  Select,
+  Table,
+  FormInstance,
+  Modal,
+  Space,
+  Checkbox,
+} from 'antd';
 import { RULE_TEMPLATES, RULE_TEMPLATE_PROPERTIES } from '../../data';
 import { v4 as uuidv4 } from 'uuid';
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
@@ -69,7 +81,7 @@ const RuleFormModal = (props: RulesetFormProps) => {
     const ruleTemplateId = RULE_TEMPLATES.filter(
       ruleTemplates =>
         ruleTemplates.rule_template_name === ruleForm.getFieldValue('ruleTemplateName') &&
-        ruleTemplates.dq_metric === value
+        ruleTemplates.dq_metric.toLowerCase() === value.toLowerCase()
     )[0].rule_template_id;
 
     const filteredProps = RULE_TEMPLATE_PROPERTIES.filter(
@@ -318,38 +330,26 @@ const RuleFormModal = (props: RulesetFormProps) => {
           )}
         </Form.List>
 
-        <Row gutter={16}>
-          <Col span={12}></Col>
-          <Col span={12}>
-            <Col span={12} style={{ float: 'right' }}>
-              {!currentRule && (
-                <Form.Item>
-                  <Button
-                    type='primary'
-                    htmlType='submit'
-                    onClick={() => createRule({ submitType: 'draft' })}
-                  >
-                    Save as Draft
-                  </Button>
-                </Form.Item>
-              )}
-            </Col>
-            <Col span={12} style={{ float: 'right' }}>
-              <Form.Item>
-                <Button
-                  type='primary'
-                  htmlType='submit'
-                  onClick={
-                    currentRule
-                      ? () => editRule({ record: undefined })
-                      : () => createRule({ submitType: 'submit' })
-                  }
-                >
-                  {currentRule ? 'Edit rule' : 'Save & Submit Rule'}
-                </Button>
-              </Form.Item>
-            </Col>
-          </Col>
+        <Row justify={'end'}>
+          <Space align='center'>
+            <Form.Item name='isDraft' valuePropName='checked'>
+              <Checkbox>Save as Draft</Checkbox>
+            </Form.Item>
+            <Form.Item>
+              <Button
+                type='primary'
+                htmlType='submit'
+                style={{ float: 'right' }}
+                onClick={
+                  currentRule
+                    ? () => editRule({ record: undefined })
+                    : () => createRule({ submitType: 'submit' })
+                }
+              >
+                {currentRule ? 'Update' : 'Submit'}
+              </Button>
+            </Form.Item>
+          </Space>
         </Row>
       </Form>
     </Modal>

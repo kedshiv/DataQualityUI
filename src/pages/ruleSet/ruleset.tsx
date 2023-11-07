@@ -45,15 +45,13 @@ const RuleSet = () => {
         if (savedData) {
           allData = JSON.parse(savedData);
         }
-        allData.push({ ...values, id: uuidv4(), isDraft: submitType !== 'submit' });
+        allData.push({ ...values, id: uuidv4() });
         localStorage.setItem('ruleset', JSON.stringify(allData));
         setIsModalVisible(false);
         setRuleset(allData);
         rulesetForm.resetFields();
         message.success(
-          submitType === 'draft'
-            ? 'Ruleset Draft created successfully !'
-            : 'Ruleset created successfully !'
+          values.isDraft ? 'Ruleset Draft created successfully !' : 'Ruleset created successfully !'
         );
       })
       .catch(errorInfo => {
