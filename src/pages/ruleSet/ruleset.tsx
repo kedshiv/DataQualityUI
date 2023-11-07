@@ -1,12 +1,13 @@
-import {  useEffect, useState } from 'react';
-import { Table, Button, Modal, Space } from 'antd';
-import styles from './ruleset.module.scss'
+import { useEffect, useState } from 'react';
+import { Table, Button, Modal, Space, Tag } from 'antd';
+import styles from './ruleset.module.scss';
 import RulesetForm from '../../components/RulesetForm/RulesetForm';
-
+import { v4 as uuidv4 } from 'uuid';
 
 const RuleSet = () => {
-  const [data,setData] = useState([])
-  
+  const [data, setData] = useState([]);
+  const [currentRuleset, setCurrentRuleSet] = useState<any>(null);
+
   const columns = [
     {
       title: 'Ruleset Name',
@@ -24,18 +25,36 @@ const RuleSet = () => {
       key: 'notificationEmail',
     },
     {
+      title: 'Status',
+      dataIndex: 'isDraft',
+      key: 'isDraft',
+      render: (_: any, record: any) => (
+        <Space size='middle'>
+          <Tag color={`${record.isDraft ? 'red' : 'blue'}`}>
+            {record.isDraft ? 'Drafted' : 'Submitted'}
+          </Tag>
+        </Space>
+      ),
+    },
+    {
       title: 'Actions',
       key: 'actions',
-      render: () => (
-        <Space size="middle">
-          <a>Edit</a>
+      render: (_: any, record: any) => (
+        <Space size='middle'>
+          <button
+            onClick={() => {
+              setCurrentRuleSet(record);
+              showModal();
+            }}
+          >
+            Edit
+          </button>{' '}
           <a>Delete</a>
         </Space>
       ),
     },
   ];
 
- 
   useEffect(() => {
     // Load saved enttities from localStorage
     const savedData = localStorage.getItem('ruleset');
@@ -56,20 +75,31 @@ const RuleSet = () => {
 
   return (
     <div>
-      <Button type="primary" onClick={showModal}  className={styles.createButton}>
+      <Button
+        type='primary'
+        onClick={() => {
+          setCurrentRuleSet(null);
+          showModal();
+        }}
+        className={styles.createButton}
+      >
         Create Ruleset
       </Button>
       <Table columns={columns} dataSource={data} />
       <Modal
-        title="Create Ruleset"
-        visible={isModalVisible}
+        title='Create Ruleset'
+        open={isModalVisible}
         onCancel={handleCancel}
-        width={'70%'} 
+        width={'70%'}
         footer={null}
       >
-        <RulesetForm setIsModalVisible={setIsModalVisible} setData={setData} />
+        <RulesetForm
+          key={uuidv4()}
+          currentRuleset={currentRuleset}
+          setIsModalVisible={setIsModalVisible}
+          setData={setData}
+        />
       </Modal>
-
     </div>
   );
 };
