@@ -1,5 +1,6 @@
 const LABELS: Record<string, string> = {
-  "CSV": "CSV"
+  "CSV": "CSV",
+  "SQL_VALIDATOR": "SQL Validator"
 };
 
 export const formatString = (text: string): string => {

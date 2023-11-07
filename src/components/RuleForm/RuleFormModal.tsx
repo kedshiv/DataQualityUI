@@ -4,6 +4,7 @@ import { RULE_TEMPLATES, RULE_TEMPLATE_PROPERTIES } from '../../data';
 import { v4 as uuidv4 } from 'uuid';
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import { CreateRule } from '../../pages/rule/rule';
+import { formatString } from '../../common/utilities/utils';
 
 const { Option } = Select;
 type RulesetFormProps = {
@@ -116,7 +117,7 @@ const RuleFormModal = (props: RulesetFormProps) => {
               <Select placeholder='Select Rule Template Name' onChange={handleRuleTemplateChange}>
                 {RULE_TEMPLATES.filter(ruleTemplate => ruleTemplate).map(template => (
                   <Option key={template.rule_template_id} value={template.rule_template_name}>
-                    {template.rule_template_name}
+                    {formatString(template.rule_template_name)}
                   </Option>
                 ))}
               </Select>
@@ -135,7 +136,7 @@ const RuleFormModal = (props: RulesetFormProps) => {
             >
               <Select placeholder='Select DQ Metric' onChange={handleDQMetricChange}>
                 {availableDQMetics.map(metric => (
-                  <Option key={metric} value={metric}>
+                  <Option key={metric} value={formatString(metric)}>
                     {metric}
                   </Option>
                 ))}

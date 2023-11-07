@@ -1,4 +1,5 @@
 import { Modal, Table, Row, Col } from 'antd';
+import { formatString } from '../../common/utilities/utils';
 
 type RuleDetailsModalProps = {
   ruleData: any;
@@ -25,7 +26,7 @@ const RuleDetailsModal = ({
 
   return (
     <Modal
-      title=''
+      title='Rule Details'
       open={isModalVisible}
       onOk={handleModalClose}
       onCancel={handleModalClose}
@@ -34,7 +35,7 @@ const RuleDetailsModal = ({
       footer={null} // Remove the footer
     >
       <div style={{ marginBottom: 20 }}>
-        <h2>Rule Details:</h2>
+
         <Row gutter={24}>
           <Col span={24}>
             <p>
@@ -51,12 +52,12 @@ const RuleDetailsModal = ({
         <Row gutter={24}>
           <Col span={12}>
             <p>
-              <strong>Rule Template Name:</strong> {ruleData?.ruleTemplateName}
+              <strong>Rule Template Name:</strong> {formatString(ruleData?.ruleTemplateName)}
             </p>
           </Col>
           <Col span={12}>
             <p>
-              <strong>DQ Metric:</strong> {ruleData?.dqMetric}
+              <strong>DQ Metric:</strong> {formatString(ruleData?.dqMetric)}
             </p>
           </Col>
         </Row>
@@ -93,7 +94,7 @@ const RuleDetailsModal = ({
         </Row>
       </div>
 
-      <h2>Properties:</h2>
+      <h3>Properties:</h3>
       <Table dataSource={ruleData?.properties} columns={columns} pagination={false} />
     </Modal>
   );
