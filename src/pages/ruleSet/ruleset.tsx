@@ -15,25 +15,26 @@ import {
 import styles from './ruleset.module.scss';
 import RulesetForm from '../../components/RulesetForm/RulesetForm';
 import { v4 as uuidv4 } from 'uuid';
+import { RulesetFormData } from '../../interfaces/ruleset';
 
 const { Text } = Typography;
 
 const RuleSet = () => {
-  const [ruleset, setRuleset] = useState([]);
-  const [currentRuleset, setCurrentRuleSet] = useState<any>(null);
+  const [ruleset, setRuleset] = useState<Array<RulesetFormData>>([]);
+  const [currentRuleset, setCurrentRuleSet] = useState<RulesetFormData | null>(null);
   const [rulesetForm] = Form.useForm();
   const [searchText, setSearchText] = useState('');
-  const [filteredData, setFilteredData] = useState([]);
+  const [filteredData, setFilteredData] = useState<Array<RulesetFormData>>([]);
 
   const handleSearch = (text: string) => {
     setSearchText(text);
-    const filteredRules = ruleset.filter((ruleset: any) =>
+    const filteredRules = ruleset.filter((ruleset: RulesetFormData) =>
       ruleset.ruleSetName.toLowerCase().includes(text.toLowerCase())
     );
     setFilteredData(filteredRules);
   };
 
-  const createRuleset = (submitType: any) => {
+  const createRuleset = (submitType: 'submit' | 'draft') => {
     rulesetForm
       .validateFields()
       .then(() => {
@@ -49,7 +50,11 @@ const RuleSet = () => {
         setIsModalVisible(false);
         setRuleset(allData);
         rulesetForm.resetFields();
-        message.success('Ruleset created successfully !');
+        message.success(
+          submitType === 'draft'
+            ? 'Ruleset Draft created successfully !'
+            : 'Ruleset created successfully !'
+        );
       })
       .catch(errorInfo => {
         // Form has validation errors
@@ -62,12 +67,12 @@ const RuleSet = () => {
       .then(() => {
         const values = record ? record : rulesetForm.getFieldsValue();
 
-        const currentRuleSetId = record ? record.id : currentRuleset.id;
+        const currentRuleSetId = record ? record.id : currentRuleset?.id;
         const savedData = localStorage.getItem('ruleset');
 
         let allData = [];
         if (savedData) {
-          allData = JSON.parse(savedData).map((ruleset: any) => {
+          allData = JSON.parse(savedData).map((ruleset: RulesetFormData) => {
             if (ruleset.id === currentRuleSetId) {
               return { ...ruleset, ...values };
             }
@@ -88,11 +93,11 @@ const RuleSet = () => {
       });
   };
 
-  const deleteRuleset = (ruleset: any) => {
+  const deleteRuleset = (ruleset: RulesetFormData) => {
     let rulesets = localStorage.getItem('ruleset');
     const parsedRuleSets = JSON.parse(rulesets || '') || [];
     if (parsedRuleSets) {
-      let filteredRules = parsedRuleSets.filter((rs: any) => rs.id !== ruleset.id);
+      let filteredRules = parsedRuleSets.filter((rs: RulesetFormData) => rs.id !== ruleset.id);
       localStorage.setItem('rule', JSON.stringify(filteredRules));
       setRuleset(filteredRules);
       message.success('Ruleset deleted successfully!');
@@ -104,7 +109,7 @@ const RuleSet = () => {
       title: 'Ruleset Name',
       dataIndex: 'ruleSetName',
       key: 'ruleSetName',
-      render: (name: string, record: any) => (
+      render: (name: string, record: RulesetFormData) => (
         <>
           <Text>{name}</Text> {record?.isDraft ? <Tag>Draft</Tag> : null}
         </>
@@ -123,7 +128,7 @@ const RuleSet = () => {
     {
       title: 'Actions',
       key: 'actions',
-      render: (_: any, record: any) => (
+      render: (_: any, record: RulesetFormData) => (
         <Space size='middle'>
           <a
             onClick={() => {
