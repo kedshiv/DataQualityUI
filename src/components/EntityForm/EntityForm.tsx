@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction, useEffect } from 'react';
-import { Form, Input, Select, Button, Row, Col } from 'antd';
+import { Form, Input, Select, Button, Row, Col, message, Checkbox, Space, Modal } from 'antd';
 import { PlusOutlined, MinusCircleOutlined } from "@ant-design/icons";
 import { ENTITY_TEMPLATES, ENTITY_TEMPLATE_PROPERTIES } from "../../data";
 import { IEntityTemplate, IGroupedOption } from '../../interfaces';
@@ -10,30 +10,43 @@ const { Option, OptGroup } = Select;
 type EntityFormProps = {
   setIsModalVisible: Dispatch<SetStateAction<boolean>>
   setData: Dispatch<SetStateAction<any>>
+  entityToEdit?: any; // You should type this according to the shape of the entity you expect
 }
 const EntityForm = (props: EntityFormProps) => {
-  const { setIsModalVisible, setData } = props;
+  const { setIsModalVisible, setData, entityToEdit } = props;
   const [form] = Form.useForm();
 
-  const createEntities = (values: any) => {
-    console.log(values);
-    const savedData = localStorage.getItem('entities');
-    let allData = [];
-    if (savedData) {
-      allData = JSON.parse(savedData);
-    }
-    allData.push(values);
-    localStorage.setItem('entities', JSON.stringify(allData));
-    setIsModalVisible(false)
-    setData(allData)
-    form.resetFields();
-  };
-
   useEffect(() => {
+    // Check if there is an entity to edit and set the form fields
+    console.log(entityToEdit)
+    if (entityToEdit) {
+      form.setFieldsValue(entityToEdit);
+    }
     return () => {
       form.resetFields();
+    };
+  }, [entityToEdit, form]);
+
+  const handleSubmit = (values: any) => {
+    console.log(values);
+    let allData = JSON.parse(localStorage.getItem('entities') || '[]');
+
+    if (entityToEdit) {
+      // Find the index of the entity to edit and update it
+      const index = allData.findIndex((entity: any) => entity.id === entityToEdit.id);
+      allData[index] = { ...entityToEdit, ...values };
+      message.success('Entity updated successfully!');
+    } else {
+      // If we're creating a new entity, add it to the array
+      allData.push({ id: Date.now(), ...values });
+      message.success('Entity created successfully!');
     }
-  })
+
+    localStorage.setItem('entities', JSON.stringify(allData));
+    setIsModalVisible(false);
+    setData(allData);
+    form.resetFields();
+  };
 
   const handleEntitySubTypeChange = (value: string) => {
     // Clear existing properties
@@ -88,7 +101,7 @@ const EntityForm = (props: EntityFormProps) => {
   };
 
   return (
-    <Form layout='vertical' form={form} name="entityForm" onFinish={createEntities}>
+    <Form layout='vertical' form={form} name="entityForm" onFinish={handleSubmit}>
       <Row gutter={16}>
         <Col span={12}>
           <Form.Item
@@ -120,7 +133,7 @@ const EntityForm = (props: EntityFormProps) => {
               },
             ]}
           >
-            <Input />
+            <Input autoComplete='off' />
           </Form.Item>
         </Col>
         <Col span={12}>
@@ -134,7 +147,7 @@ const EntityForm = (props: EntityFormProps) => {
               },
             ]}
           >
-            <Input />
+            <Input autoComplete='off' />
           </Form.Item>
         </Col>
       </Row>
@@ -151,7 +164,7 @@ const EntityForm = (props: EntityFormProps) => {
               },
             ]}
           >
-            <Input />
+            <Input autoComplete='off' />
           </Form.Item>
         </Col>
       </Row>
@@ -172,7 +185,7 @@ const EntityForm = (props: EntityFormProps) => {
                       message: 'Property Name is required',
                     }]}
                   >
-                    <Input />
+                    <Input autoComplete='off' />
                   </Form.Item>
                 </Col>
                 <Col span={4}>
@@ -196,7 +209,7 @@ const EntityForm = (props: EntityFormProps) => {
                     }]}
                     label="Property Value"
                   >
-                    <Input />
+                    <Input autoComplete='off' />
                   </Form.Item>
                 </Col>
                 {/* Conditionally render the delete button */}
@@ -217,15 +230,17 @@ const EntityForm = (props: EntityFormProps) => {
           </>
         )}
       </Form.List>
-
-      <Row gutter={16}>
-        <Col span={24}>
+      <Row justify={"end"}>
+        <Space align="center">
+          <Form.Item name="isDraft" valuePropName="checked">
+            <Checkbox>Save as Draft</Checkbox>
+          </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" style={{ float: 'right' }}>
-              Submit
+              {entityToEdit ? 'Update' : 'Submit'}
             </Button>
           </Form.Item>
-        </Col>
+        </Space>
       </Row>
     </Form>
   );

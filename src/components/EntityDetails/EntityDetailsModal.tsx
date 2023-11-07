@@ -3,39 +3,20 @@ import { Descriptions, Modal, Space } from 'antd';
 import type { DescriptionsProps } from 'antd';
 import NiceModal, { useModal } from '@ebay/nice-modal-react';
 import { formatString } from '../../common/utilities/utils';
-
-interface EntityProperty {
-  propertyName: string;
-  propertyValue: string;
-  propertyType: string;
-  isMandatory: boolean;
-}
-
-interface Entity {
-  entity_subtype: string;
-  entity_type: string;
-  entityName: string;
-  entityPhysicalName: string;
-  primaryKey: string;
-  properties: EntityProperty[];
-}
-
-interface EntityDetailsModalProps {
-  entity: Entity;
-}
+import { IEntity, IEntityDetailsModalProps } from '../../interfaces';
 
 // Function to convert entity details to description items
-const entityToDescriptionsItems = (entity: Entity): DescriptionsProps['items'] => {
+const entityToDescriptionsItems = (entity: IEntity): DescriptionsProps['items'] => {
   const baseItems: DescriptionsProps['items'] = [
-    {
-      key: '1',
-      label: 'Entity SubType',
-      children: entity.entity_subtype,
-    },
     {
       key: '2',
       label: 'Entity Type',
-      children: entity.entity_type,
+      children: formatString(entity.entity_type),
+    },
+    {
+      key: '1',
+      label: 'Entity SubType',
+      children: formatString(entity.entity_subtype),
     },
     {
       key: '3',
@@ -74,7 +55,7 @@ const entityToDescriptionsItems = (entity: Entity): DescriptionsProps['items'] =
   return [...baseItems, ...propertyItems];
 };
 
-export const EntityDetailsModal = NiceModal.create(({ entity }: EntityDetailsModalProps) => {
+export const EntityDetailsModal = NiceModal.create(({ entity }: IEntityDetailsModalProps) => {
   const modal = useModal();
 
   const items = entityToDescriptionsItems(entity);

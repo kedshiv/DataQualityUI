@@ -1,21 +1,67 @@
-import {  useEffect, useState } from 'react';
-import { Table, Button, Modal, Form, Input, Select, Space, Row, Col } from 'antd';
+import { useEffect, useState } from 'react';
+import { Table, Button, Modal, Space, message, Popconfirm, Typography, Tag } from 'antd';
 import styles from './entity.module.scss'
 import EntityForm from '../../components/EntityForm/EntityForm';
 import { formatString } from '../../common/utilities/utils';
 import NiceModal from '@ebay/nice-modal-react';
-import { IEntityTemplate } from '../../interfaces';
+import { IEntity, IEntityTemplate } from '../../interfaces';
 import EntityDetailsModal from '../../components/EntityDetails/EntityDetailsModal';
+
+const { Text } = Typography;
 
 
 const Entity = () => {
-  const [data,setData] = useState([])
-  
+  const [data, setData] = useState<IEntity[]>([]);
+  const [editingEntity, setEditingEntity] = useState<IEntity | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  useEffect(() => {
+    // Load saved enttities from localStorage
+    const savedData = localStorage.getItem('entities');
+    if (savedData) {
+      setData(JSON.parse(savedData));
+    }
+  }, []);
+
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleCancel = () => {
+    setEditingEntity(null); // Ensure no entity is set for editing
+    setIsModalVisible(false);
+  };
+
+  const showEntityDetails = (entity: any) => {
+    NiceModal.show(EntityDetailsModal, { entity });
+  };
+
+  const editEntityModal = (entity: IEntity) => {
+    setEditingEntity(entity); // Set the entity to edit
+    setIsModalVisible(true); // Show the form modal
+  }
+
+  const deleteEntity = (entity: IEntity) => {
+    let entities: string | null | [IEntity] = localStorage.getItem("entities");
+    const parsedEntities = JSON.parse(entities || "") || [];
+    if (parsedEntities) {
+      let filteredEntities = parsedEntities.filter((ent: IEntity) => ent.entityName !== entity.entityName);
+      localStorage.setItem("entities", JSON.stringify(filteredEntities));
+      setData(filteredEntities);
+      message.success('Entity deleted successfully!');
+    }
+  }
+
   const columns = [
     {
       title: 'Entity Name',
       dataIndex: 'entityName',
       key: 'entityName',
+      render: (name: string, record: IEntity
+      ) => <>
+        <Text>{name}</Text>{" "}
+        {record?.isDraft ? <Tag>Draft</Tag> : null} 
+      </>
     },
     {
       title: 'Entity Physical Name',
@@ -34,75 +80,48 @@ const Entity = () => {
       key: 'entity_subtype',
       render: (subtype: string) => formatString(subtype)
     },
-    // {
-    //   title: 'Primary Key',
-    //   dataIndex: 'primaryKey',
-    //   key: 'primaryKey',
-    // },
-    // {
-    //   title: 'Property_1',
-    //   dataIndex: 'property1',
-    //   key: 'property1',
-    // },
-    // {
-    //   title: 'Value_1',
-    //   dataIndex: 'value1',
-    //   key: 'value1',
-    // },
     {
       title: 'Actions',
       key: 'actions',
-      render: (record: IEntityTemplate) => (
+      render: (record: IEntity) => (
         <Space size="middle">
           <a onClick={() => showEntityDetails(record)}>View</a>
-          <a>Edit</a>
-          <a>Delete</a>
+          <a onClick={() => {
+            editEntityModal(record);
+          }}>Edit</a>
+          <Popconfirm
+            title="Delete the Entity"
+            description="Are you sure to delete this entity?"
+            onConfirm={() => { deleteEntity(record) }}
+            onCancel={() => { }}
+            okText="Delete"
+            cancelText="Cancel"
+          >
+            <a> Delete</a>
+          </Popconfirm>
         </Space>
       ),
     },
   ];
 
- 
-  useEffect(() => {
-    // Load saved enttities from localStorage
-    const savedData = localStorage.getItem('entities');
-    if (savedData) {
-      setData(JSON.parse(savedData));
-    }
-  }, []);
-
-  const [isModalVisible, setIsModalVisible] = useState(false);
-
-  const showModal = () => {
-    setIsModalVisible(true);
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-  };
-
-  const showEntityDetails = (entity: any) => {
-    console.log(entity);
-    NiceModal.show(EntityDetailsModal, { entity });
-  };
-
   return (
     <div>
-      <Button type="primary" onClick={showModal}  className={styles.createButton}>
+      <Button type="primary" onClick={showModal} className={styles.createButton}>
         Create Entity
       </Button>
-      <Table columns={columns} dataSource={data} />
+      <Table
+        columns={columns}
+        dataSource={data}
+      />
       <Modal
-        title="Create Entity"
+        title={editingEntity ? "Edit Entity" : "Create Entity"}
         visible={isModalVisible}
-        // onOk={handleCreateRules}
         onCancel={handleCancel}
-        width={'70%'} // Set the desired width
+        width={'70%'}
         footer={null}
       >
-        <EntityForm setIsModalVisible={setIsModalVisible} setData={setData} />
+        <EntityForm setIsModalVisible={setIsModalVisible} setData={setData} entityToEdit={editingEntity} />
       </Modal>
-
     </div>
   );
 };
