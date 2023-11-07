@@ -40,15 +40,16 @@ const entityToDescriptionsItems = (entity: IEntity): DescriptionsProps['items'] 
     key: `property-${index}`,
     label: `Property ${index + 1}`,
     children: (
-        <Descriptions 
+      <Descriptions
         bordered
         items={[
           {
             key: 'prop-${index}',
             label: `${prop.propertyName}`,
-            children: prop.propertyValue
-          }
-        ]} />
+            children: prop.propertyValue,
+          },
+        ]}
+      />
     ),
   }));
 
@@ -62,8 +63,8 @@ export const EntityDetailsModal = NiceModal.create(({ entity }: IEntityDetailsMo
 
   return (
     <Modal
-      title="Entity Details"
-      visible={modal.visible}
+      title='Entity Details'
+      open={modal.visible}
       onCancel={modal.hide}
       footer={null}
       width={800}

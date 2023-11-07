@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Table, Button, Space, Tag, Input, Row, Form } from 'antd';
+import { Table, Button, Space, Tag, Input, Row, Form, Typography, message, Popconfirm } from 'antd';
 import styles from './rule.module.scss';
 import { v4 as uuidv4 } from 'uuid';
 import RuleDetailsModal from '../../components/RuleForm/RuleDetailsModal';
 import RuleFormModal from '../../components/RuleForm/RuleFormModal';
+
+const { Text } = Typography;
 
 export type CreateRule = {
   submitType: string;
@@ -47,6 +49,9 @@ const Rule = () => {
         setIsModalVisible(false);
         setRule(allData);
         ruleForm.resetFields();
+        message.success(
+          record ? 'Rule Draft submitted successfully!' : 'Rules Edited successfully'
+        );
       })
       .catch(errorInfo => {
         // Form has validation errors
@@ -69,10 +74,23 @@ const Rule = () => {
         setIsModalVisible(false);
         setRule(allData);
         ruleForm.resetFields();
+
+        message.success('Rules created successfully!');
       })
       .catch(errorInfo => {
         // Form has validation errors
       });
+  };
+
+  const deleteRule = (rule: any) => {
+    let rules = localStorage.getItem('rule');
+    const parsedRules = JSON.parse(rules || '') || [];
+    if (parsedRules) {
+      let filteredRules = parsedRules.filter((rl: any) => rl.id !== rule.id);
+      localStorage.setItem('rule', JSON.stringify(filteredRules));
+      setRule(filteredRules);
+      message.success('Rules deleted successfully!');
+    }
   };
 
   const columns = [
@@ -80,6 +98,11 @@ const Rule = () => {
       title: 'Rule Name',
       dataIndex: 'ruleName',
       key: 'ruleName',
+      render: (name: string, record: any) => (
+        <>
+          <Text>{name}</Text> {record?.isDraft ? <Tag>Draft</Tag> : null}
+        </>
+      ),
     },
     {
       title: 'Rule Template Name',
@@ -92,49 +115,48 @@ const Rule = () => {
       key: 'dqMetric',
     },
     {
-      title: 'Status',
-      dataIndex: 'isDraft',
-      key: 'isDraft',
-      render: (_: any, record: any) => (
-        <Space size='middle'>
-          <Tag color={`${record.isDraft ? 'red' : 'blue'}`}>
-            {record.isDraft ? 'Drafted' : 'Submitted'}
-          </Tag>
-        </Space>
-      ),
-    },
-    {
       title: 'Actions',
       key: 'actions',
       render: (_: any, record: any) => (
         <Space size='middle'>
-          <button
+          <a
             onClick={() => {
               setCurrentRule(record);
               showRuleModalDetails();
             }}
           >
             View
-          </button>
-          <button
+          </a>
+          <a
             onClick={() => {
               setCurrentRule(record);
               showRuleFormModal();
             }}
           >
             Edit
-          </button>
+          </a>
+          <Popconfirm
+            title='Delete the Rule'
+            description='Are you sure to delete this rule?'
+            onConfirm={() => {
+              deleteRule(record);
+            }}
+            onCancel={() => {}}
+            okText='Delete'
+            cancelText='Cancel'
+          >
+            <a>Delete</a>
+          </Popconfirm>
           {record.isDraft && (
-            <button
+            <a
               onClick={() => {
                 record.isDraft = false;
                 editRule({ record });
               }}
             >
               Submit Draft
-            </button>
+            </a>
           )}
-          {/* <a>Delete</a> */}
         </Space>
       ),
     },

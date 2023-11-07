@@ -1,8 +1,22 @@
 import { useEffect, useState } from 'react';
-import { Table, Button, Modal, Space, Tag, Form, Row, Input } from 'antd';
+import {
+  Table,
+  Button,
+  Modal,
+  Space,
+  Tag,
+  Form,
+  Row,
+  Input,
+  Typography,
+  message,
+  Popconfirm,
+} from 'antd';
 import styles from './ruleset.module.scss';
 import RulesetForm from '../../components/RulesetForm/RulesetForm';
 import { v4 as uuidv4 } from 'uuid';
+
+const { Text } = Typography;
 
 const RuleSet = () => {
   const [ruleset, setRuleset] = useState([]);
@@ -35,6 +49,7 @@ const RuleSet = () => {
         setIsModalVisible(false);
         setRuleset(allData);
         rulesetForm.resetFields();
+        message.success('Ruleset created successfully !');
       })
       .catch(errorInfo => {
         // Form has validation errors
@@ -63,10 +78,25 @@ const RuleSet = () => {
         setIsModalVisible(false);
         setRuleset(allData);
         rulesetForm.resetFields();
+
+        message.success(
+          record ? 'Ruleset draft submitted successfully !' : 'Ruleset edited successfully !'
+        );
       })
       .catch(errorInfo => {
         // Form has validation errors
       });
+  };
+
+  const deleteRuleset = (ruleset: any) => {
+    let rulesets = localStorage.getItem('ruleset');
+    const parsedRuleSets = JSON.parse(rulesets || '') || [];
+    if (parsedRuleSets) {
+      let filteredRules = parsedRuleSets.filter((rs: any) => rs.id !== ruleset.id);
+      localStorage.setItem('rule', JSON.stringify(filteredRules));
+      setRuleset(filteredRules);
+      message.success('Ruleset deleted successfully!');
+    }
   };
 
   const columns = [
@@ -74,6 +104,11 @@ const RuleSet = () => {
       title: 'Ruleset Name',
       dataIndex: 'ruleSetName',
       key: 'ruleSetName',
+      render: (name: string, record: any) => (
+        <>
+          <Text>{name}</Text> {record?.isDraft ? <Tag>Draft</Tag> : null}
+        </>
+      ),
     },
     {
       title: 'Ruleset Description',
@@ -86,40 +121,39 @@ const RuleSet = () => {
       key: 'notificationEmail',
     },
     {
-      title: 'Status',
-      dataIndex: 'isDraft',
-      key: 'isDraft',
-      render: (_: any, record: any) => (
-        <Space size='middle'>
-          <Tag color={`${record.isDraft ? 'red' : 'blue'}`}>
-            {record.isDraft ? 'Drafted' : 'Submitted'}
-          </Tag>
-        </Space>
-      ),
-    },
-    {
       title: 'Actions',
       key: 'actions',
       render: (_: any, record: any) => (
         <Space size='middle'>
-          <button
+          <a
             onClick={() => {
               setCurrentRuleSet(record);
               showModal();
             }}
           >
             Edit
-          </button>{' '}
-          <a>Delete</a>
+          </a>
+          <Popconfirm
+            title='Delete the Ruleset'
+            description='Are you sure to delete this ruleset?'
+            onConfirm={() => {
+              deleteRuleset(record);
+            }}
+            onCancel={() => {}}
+            okText='Delete'
+            cancelText='Cancel'
+          >
+            <a>Delete</a>
+          </Popconfirm>
           {record.isDraft && (
-            <button
+            <a
               onClick={() => {
                 record.isDraft = false;
                 editRuleSet({ record });
               }}
             >
               Submit Draft
-            </button>
+            </a>
           )}
         </Space>
       ),
