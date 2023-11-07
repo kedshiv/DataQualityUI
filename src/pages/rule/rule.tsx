@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import RuleDetailsModal from '../../components/RuleForm/RuleDetailsModal';
 import RuleFormModal from '../../components/RuleForm/RuleFormModal';
 import { RuleFormData } from '../../interfaces/rule';
+import { formatString } from '../../common/utilities/utils';
 
 const { Text } = Typography;
 
@@ -109,11 +110,13 @@ const Rule = () => {
       title: 'Rule Template Name',
       dataIndex: 'ruleTemplateName',
       key: 'ruleTemplateName',
+      render: (name: string) => <>{formatString(name)}</>,
     },
     {
       title: 'DQ Metric',
       dataIndex: 'dqMetric',
       key: 'dqMetric',
+      render: (name: string) => <>{formatString(name)}</>,
     },
     {
       title: 'Actions',
