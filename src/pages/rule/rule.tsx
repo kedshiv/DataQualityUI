@@ -71,7 +71,7 @@ const Rule = () => {
           allData = JSON.parse(savedData);
         }
 
-        allData.push({ ...values, id: uuidv4(), isDraft: submitType !== 'submit' });
+        allData.push({ ...values, id: uuidv4() });
         localStorage.setItem('rule', JSON.stringify(allData));
         setIsModalVisible(false);
         setRule(allData);

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Form, Input, Button, Row, Col, FormInstance } from 'antd';
+import { Form, Input, Button, Row, Col, FormInstance, Space, Checkbox } from 'antd';
 import { RulesetFormData } from '../../interfaces/ruleset';
 
 type RulesetFormProps = {
@@ -72,7 +72,24 @@ const RulesetForm = (props: RulesetFormProps) => {
         <Col span={12}></Col>
       </Row>
 
-      <Row gutter={16}>
+      <Row justify={'end'}>
+        <Space align='center'>
+          <Form.Item name='isDraft' valuePropName='checked'>
+            <Checkbox>Save as Draft</Checkbox>
+          </Form.Item>
+          <Form.Item>
+            <Button
+              type='primary'
+              htmlType='submit'
+              style={{ float: 'right' }}
+              onClick={currentRuleset ? editRuleSet : () => createRuleset('submit')}
+            >
+              {currentRuleset ? 'Update' : 'Submit'}
+            </Button>
+          </Form.Item>
+        </Space>
+      </Row>
+      {/* <Row gutter={16}>
         <Col span={12}></Col>
         <Col span={12}>
           <Col span={12} style={{ float: 'right' }}>
@@ -96,7 +113,7 @@ const RulesetForm = (props: RulesetFormProps) => {
             </Form.Item>
           </Col>
         </Col>
-      </Row>
+      </Row> */}
     </Form>
   );
 };
