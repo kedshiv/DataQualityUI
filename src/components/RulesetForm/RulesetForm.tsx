@@ -1,62 +1,15 @@
 import React, { Dispatch, SetStateAction, useEffect } from 'react';
-import { Form, Input, Select, Button, Row, Col } from 'antd';
+import { Form, Input, Select, Button, Row, Col, FormInstance } from 'antd';
 import { v4 as uuidv4 } from 'uuid';
 
 type RulesetFormProps = {
-  setIsModalVisible: Dispatch<SetStateAction<boolean>>;
-  setData: Dispatch<SetStateAction<any>>;
   currentRuleset: any;
+  createRuleset: (submitType: string) => void;
+  rulesetForm: FormInstance<any>;
+  editRuleSet: ({ record }: any) => void;
 };
 const RulesetForm = (props: RulesetFormProps) => {
-  const { setIsModalVisible, setData, currentRuleset } = props;
-  const [rulesetForm] = Form.useForm();
-
-  const createRuleset = (submitType: any) => {
-    rulesetForm
-      .validateFields()
-      .then(() => {
-        const savedData = localStorage.getItem('ruleset');
-        const values = rulesetForm.getFieldsValue();
-
-        let allData = [];
-        if (savedData) {
-          allData = JSON.parse(savedData);
-        }
-        allData.push({ ...values, id: uuidv4(), isDraft: submitType !== 'submit' });
-        localStorage.setItem('ruleset', JSON.stringify(allData));
-        setIsModalVisible(false);
-        setData(allData);
-        rulesetForm.resetFields();
-      })
-      .catch(errorInfo => {
-        // Form has validation errors
-      });
-  };
-
-  const editRule = () => {
-    rulesetForm
-      .validateFields()
-      .then(() => {
-        const values = rulesetForm.getFieldsValue();
-        const savedData = localStorage.getItem('ruleset');
-        let allData = [];
-        if (savedData) {
-          allData = JSON.parse(savedData).map((ruleset: any) => {
-            if (ruleset.id === currentRuleset.id) {
-              return { ...ruleset, ...values };
-            }
-            return ruleset;
-          });
-        }
-        localStorage.setItem('ruleset', JSON.stringify(allData));
-        setIsModalVisible(false);
-        setData(allData);
-        rulesetForm.resetFields();
-      })
-      .catch(errorInfo => {
-        // Form has validation errors
-      });
-  };
+  const { currentRuleset, rulesetForm, createRuleset, editRuleSet } = props;
 
   useEffect(() => {
     if (currentRuleset) {
@@ -136,7 +89,7 @@ const RulesetForm = (props: RulesetFormProps) => {
               <Button
                 type='primary'
                 htmlType='submit'
-                onClick={currentRuleset ? editRule : () => createRuleset('submit')}
+                onClick={currentRuleset ? editRuleSet : () => createRuleset('submit')}
               >
                 {currentRuleset ? 'Edit ruleset' : 'Save & Submit Ruleset'}
               </Button>
