@@ -1,32 +1,85 @@
 import { useEffect, useState } from 'react';
-import { Table, Button, Modal, Space, Tag } from 'antd';
+import { Table, Button, Space, Tag, Input, Row, Form } from 'antd';
 import styles from './rule.module.scss';
-import RuleForm from '../../components/RuleForm/RuleForm';
 import { v4 as uuidv4 } from 'uuid';
+import RuleDetailsModal from '../../components/RuleForm/RuleDetailsModal';
+import RuleFormModal from '../../components/RuleForm/RuleFormModal';
+
+export type CreateRule = {
+  submitType: string;
+  record?: any;
+};
 const Rule = () => {
-  const [rule, setRule] = useState([]);
+  const [rule, setRule] = useState<any>([]);
+  const [currentRule, setCurrentRule] = useState<any>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isRuleModalVisible, setIsRuleModalVisible] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [filteredData, setFilteredData] = useState(rule);
+  const [ruleForm] = Form.useForm();
 
-  const [visibleProperties, setVisibleProperties] = useState(false);
-  const [selectedProperties, setSelectedProperties] = useState([]);
-  const [currentRule, setCurrentRule] = useState(null);
-  const showPropertiesModal = (properties: any) => {
-    setSelectedProperties(properties);
-    setVisibleProperties(true);
+  const handleSearch = (text: string) => {
+    setSearchText(text);
+    const filteredRules = rule.filter((rule: any) =>
+      rule.ruleName.toLowerCase().includes(text.toLowerCase())
+    );
+    setFilteredData(filteredRules);
   };
 
-  const handlePropertiesCancel = () => {
-    setVisibleProperties(false);
+  const editRule = ({ record = undefined }: any) => {
+    ruleForm
+      .validateFields()
+      .then(() => {
+        const savedData = localStorage.getItem('rule');
+        const values = record ? record : ruleForm.getFieldsValue();
+        const currentRuleId = record ? record.id : currentRule.id;
+
+        let allData = [];
+        if (savedData) {
+          allData = JSON.parse(savedData).map((rule: any) => {
+            if (rule.id === currentRuleId) {
+              return { ...rule, ...values };
+            }
+            return rule;
+          });
+        }
+        localStorage.setItem('rule', JSON.stringify(allData));
+        setIsModalVisible(false);
+        setRule(allData);
+        ruleForm.resetFields();
+      })
+      .catch(errorInfo => {
+        // Form has validation errors
+      });
   };
+
+  const createRule = ({ submitType, record = undefined }: CreateRule) => {
+    ruleForm
+      .validateFields()
+      .then(() => {
+        const savedData = localStorage.getItem('rule');
+        const values = record ? record : ruleForm.getFieldsValue();
+        let allData = [];
+        if (savedData) {
+          allData = JSON.parse(savedData);
+        }
+
+        allData.push({ ...values, id: uuidv4(), isDraft: submitType !== 'submit' });
+        localStorage.setItem('rule', JSON.stringify(allData));
+        setIsModalVisible(false);
+        setRule(allData);
+        ruleForm.resetFields();
+      })
+      .catch(errorInfo => {
+        // Form has validation errors
+      });
+  };
+
   const columns = [
     {
       title: 'Rule Name',
       dataIndex: 'ruleName',
       key: 'ruleName',
-    },
-    {
-      title: 'Rule Description',
-      dataIndex: 'ruleDescription',
-      key: 'ruleDescription',
     },
     {
       title: 'Rule Template Name',
@@ -38,37 +91,16 @@ const Rule = () => {
       dataIndex: 'dqMetric',
       key: 'dqMetric',
     },
-
     {
-      title: 'Ruleset Name',
-      dataIndex: 'rulesetName',
-      key: 'rulesetName',
-    },
-    {
-      title: 'Primary Source Entity',
-      dataIndex: 'primarySourceEntity',
-      key: 'primarySourceEntity',
-    },
-    {
-      title: 'Primary Target Entity',
-      dataIndex: 'primaryTargetEntity',
-      key: 'primaryTargetEntity',
-    },
-    {
-      title: 'Secondary Source Entity',
-      dataIndex: 'secondarySourceEntity',
-      key: 'secondarySourceEntity',
-    },
-    {
-      title: 'Secondary Target Entity',
-      dataIndex: 'secondaryTargetEntity',
-      key: 'secondaryTargetEntity',
-    },
-    {
-      title: 'Properties',
-      key: 'properties',
+      title: 'Status',
+      dataIndex: 'isDraft',
+      key: 'isDraft',
       render: (_: any, record: any) => (
-        <Button onClick={() => showPropertiesModal(record.properties)}>View Properties</Button>
+        <Space size='middle'>
+          <Tag color={`${record.isDraft ? 'red' : 'blue'}`}>
+            {record.isDraft ? 'Drafted' : 'Submitted'}
+          </Tag>
+        </Space>
       ),
     },
     {
@@ -79,12 +111,30 @@ const Rule = () => {
           <button
             onClick={() => {
               setCurrentRule(record);
-              showModal();
+              showRuleModalDetails();
+            }}
+          >
+            View
+          </button>
+          <button
+            onClick={() => {
+              setCurrentRule(record);
+              showRuleFormModal();
             }}
           >
             Edit
           </button>
-          <a>Delete</a>
+          {record.isDraft && (
+            <button
+              onClick={() => {
+                record.isDraft = false;
+                editRule({ record });
+              }}
+            >
+              Submit Draft
+            </button>
+          )}
+          {/* <a>Delete</a> */}
         </Space>
       ),
     },
@@ -98,9 +148,11 @@ const Rule = () => {
     }
   }, []);
 
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  useEffect(() => {
+    setFilteredData(rule);
+  }, [rule]);
 
-  const showModal = () => {
+  const showRuleFormModal = () => {
     setIsModalVisible(true);
   };
 
@@ -108,57 +160,53 @@ const Rule = () => {
     setIsModalVisible(false);
   };
 
+  const showRuleModalDetails = () => {
+    setIsRuleModalVisible(true);
+  };
+
+  const handleRuleModalCancel = () => {
+    setIsRuleModalVisible(false);
+  };
+
   return (
     <div>
-      <Button type='primary' onClick={showModal} className={styles.createButton}>
-        Create Rule
-      </Button>
-      <Table columns={columns} dataSource={rule} />
-      <Modal
-        title='Create Rule'
-        open={isModalVisible}
-        key={uuidv4()}
-        onCancel={handleCancel}
-        width={'70%'}
-        footer={null}
-      >
-        <RuleForm
-          currentRule={currentRule}
-          setIsModalVisible={setIsModalVisible}
-          setRule={setRule}
+      <Row style={{ float: 'right' }}>
+        <Button
+          type='primary'
+          onClick={() => {
+            setCurrentRule(null);
+            showRuleFormModal();
+          }}
+          className={styles.createButton}
+        >
+          Create Rule
+        </Button>
+      </Row>
+      <div>
+        <Input
+          placeholder='Search Rule Name'
+          value={searchText}
+          onChange={e => handleSearch(e.target.value)}
+          style={{ width: 300 }}
         />
-      </Modal>
+        <Table columns={columns} dataSource={filteredData} />
+      </div>
 
-      <Modal
-        title='Properties'
-        open={visibleProperties}
-        onCancel={handlePropertiesCancel}
-        footer={null}
-        width={'60%'}
-      >
-        <Table
-          columns={[
-            {
-              title: 'Property Key',
-              dataIndex: 'propertyKey',
-              key: 'propertyKey',
-            },
-            {
-              title: 'Property Type',
-              dataIndex: 'propertyType',
-              key: 'propertyType',
-              render: propertyType => <Tag>{propertyType}</Tag>,
-            },
-            {
-              title: 'Property Value',
-              dataIndex: 'propertyValue',
-              key: 'propertyValue',
-            },
-          ]}
-          dataSource={selectedProperties}
-          pagination={false}
-        />
-      </Modal>
+      <RuleFormModal
+        createRule={createRule}
+        editRule={editRule}
+        ruleForm={ruleForm}
+        isModalVisible={isModalVisible}
+        handleCancel={handleCancel}
+        key={uuidv4()}
+        currentRule={currentRule}
+      />
+
+      <RuleDetailsModal
+        isModalVisible={isRuleModalVisible}
+        ruleData={currentRule}
+        handleModalClose={handleRuleModalCancel}
+      />
     </div>
   );
 };
