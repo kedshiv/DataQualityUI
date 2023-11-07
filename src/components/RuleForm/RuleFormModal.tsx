@@ -4,24 +4,26 @@ import { RULE_TEMPLATES, RULE_TEMPLATE_PROPERTIES } from '../../data';
 import { v4 as uuidv4 } from 'uuid';
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import { CreateRule } from '../../pages/rule/rule';
+import { RuleFormData } from '../../interfaces/rule';
+import { IEntity } from '../../interfaces';
 import { formatString } from '../../common/utilities/utils';
 
 const { Option } = Select;
 type RulesetFormProps = {
-  currentRule: any | undefined;
+  currentRule?: RuleFormData | null;
   isModalVisible: boolean;
   handleCancel: () => void;
-  editRule: ({ record }: any) => void;
-  ruleForm: FormInstance<any>;
+  editRule: ({ record }: { record?: RuleFormData }) => void;
+  ruleForm: FormInstance<RuleFormData>;
   createRule: ({ submitType, record }: CreateRule) => void;
 };
 
 const RuleFormModal = (props: RulesetFormProps) => {
   const { currentRule, isModalVisible, handleCancel, editRule, ruleForm, createRule } = props;
   const [availableDQMetics, setAvailableDQMetics] = useState<string[]>([]);
-  const [entities, setEntity] = useState<any>([]);
+  const [entities, setEntity] = useState<Array<IEntity>>([]);
   const [ruleset, setRuleset] = useState<any>([]);
-  const [secondaryEntities, setSecondaryEntities] = useState<any[]>([]);
+  const [secondaryEntities, setSecondaryEntities] = useState<Array<IEntity>>([]);
 
   useEffect(() => {
     if (currentRule) {
@@ -54,7 +56,9 @@ const RuleFormModal = (props: RulesetFormProps) => {
 
   const handlePrimarySourceChange = (value: string) => {
     // Filter entities for secondary source and target
-    const secondaryEntitiesFiltered = entities.filter((entity: any) => entity.entityName !== value);
+    const secondaryEntitiesFiltered = entities.filter(
+      (entity: IEntity) => entity.entityName !== value
+    );
     setSecondaryEntities(secondaryEntitiesFiltered);
 
     // Clear secondary source and target selections
@@ -200,7 +204,7 @@ const RuleFormModal = (props: RulesetFormProps) => {
                 placeholder='Select Primary Source Entity'
                 onChange={handlePrimarySourceChange}
               >
-                {entities.map((entity: any, index: any) => (
+                {entities.map((entity: IEntity, index: any) => (
                   <Option key={index} value={entity.entityName}>
                     {entity.entityName}
                   </Option>
@@ -220,7 +224,7 @@ const RuleFormModal = (props: RulesetFormProps) => {
               ]}
             >
               <Select placeholder='Select Primary Target Entity' disabled={!enableTargetEntities}>
-                {entities.map((entity: any, index: any) => (
+                {entities.map((entity: IEntity, index: any) => (
                   <Option key={index} value={entity.entityName}>
                     {entity.entityName}
                   </Option>
@@ -335,7 +339,11 @@ const RuleFormModal = (props: RulesetFormProps) => {
                 <Button
                   type='primary'
                   htmlType='submit'
-                  onClick={currentRule ? editRule : () => createRule({ submitType: 'submit' })}
+                  onClick={
+                    currentRule
+                      ? () => editRule({ record: undefined })
+                      : () => createRule({ submitType: 'submit' })
+                  }
                 >
                   {currentRule ? 'Edit rule' : 'Save & Submit Rule'}
                 </Button>

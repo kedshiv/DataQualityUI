@@ -4,22 +4,23 @@ import styles from './rule.module.scss';
 import { v4 as uuidv4 } from 'uuid';
 import RuleDetailsModal from '../../components/RuleForm/RuleDetailsModal';
 import RuleFormModal from '../../components/RuleForm/RuleFormModal';
+import { RuleFormData } from '../../interfaces/rule';
 import { formatString } from '../../common/utilities/utils';
 
 const { Text } = Typography;
 
 export type CreateRule = {
-  submitType: string;
-  record?: any;
+  submitType: 'submit' | 'draft';
+  record?: RuleFormData;
 };
 const Rule = () => {
-  const [rule, setRule] = useState<any>([]);
-  const [currentRule, setCurrentRule] = useState<any>(null);
+  const [rule, setRule] = useState<Array<RuleFormData>>([]);
+  const [currentRule, setCurrentRule] = useState<RuleFormData | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isRuleModalVisible, setIsRuleModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [filteredData, setFilteredData] = useState(rule);
-  const [ruleForm] = Form.useForm();
+  const [ruleForm] = Form.useForm<RuleFormData>();
 
   const handleSearch = (text: string) => {
     setSearchText(text);
@@ -29,17 +30,17 @@ const Rule = () => {
     setFilteredData(filteredRules);
   };
 
-  const editRule = ({ record = undefined }: any) => {
+  const editRule = ({ record = undefined }: { record?: RuleFormData }) => {
     ruleForm
       .validateFields()
       .then(() => {
         const savedData = localStorage.getItem('rule');
         const values = record ? record : ruleForm.getFieldsValue();
-        const currentRuleId = record ? record.id : currentRule.id;
+        const currentRuleId = record ? record.id : currentRule?.id;
 
         let allData = [];
         if (savedData) {
-          allData = JSON.parse(savedData).map((rule: any) => {
+          allData = JSON.parse(savedData).map((rule: RuleFormData) => {
             if (rule.id === currentRuleId) {
               return { ...rule, ...values };
             }
@@ -83,11 +84,11 @@ const Rule = () => {
       });
   };
 
-  const deleteRule = (rule: any) => {
+  const deleteRule = (rule: RuleFormData) => {
     let rules = localStorage.getItem('rule');
     const parsedRules = JSON.parse(rules || '') || [];
     if (parsedRules) {
-      let filteredRules = parsedRules.filter((rl: any) => rl.id !== rule.id);
+      let filteredRules = parsedRules.filter((rl: RuleFormData) => rl.id !== rule.id);
       localStorage.setItem('rule', JSON.stringify(filteredRules));
       setRule(filteredRules);
       message.success('Rules deleted successfully!');
@@ -99,7 +100,7 @@ const Rule = () => {
       title: 'Rule Name',
       dataIndex: 'ruleName',
       key: 'ruleName',
-      render: (name: string, record: any) => (
+      render: (name: string, record: RuleFormData) => (
         <>
           <Text>{name}</Text> {record?.isDraft ? <Tag>Draft</Tag> : null}
         </>
@@ -109,18 +110,18 @@ const Rule = () => {
       title: 'Rule Template Name',
       dataIndex: 'ruleTemplateName',
       key: 'ruleTemplateName',
-      render: (name: string) => <>{formatString(name)}</>
+      render: (name: string) => <>{formatString(name)}</>,
     },
     {
       title: 'DQ Metric',
       dataIndex: 'dqMetric',
       key: 'dqMetric',
-      render: (name: string) => <>{formatString(name)}</>
+      render: (name: string) => <>{formatString(name)}</>,
     },
     {
       title: 'Actions',
       key: 'actions',
-      render: (_: any, record: any) => (
+      render: (_: string, record: RuleFormData) => (
         <Space size='middle'>
           <a
             onClick={() => {

@@ -1,12 +1,12 @@
-import React, { Dispatch, SetStateAction, useEffect } from 'react';
-import { Form, Input, Select, Button, Row, Col, FormInstance } from 'antd';
-import { v4 as uuidv4 } from 'uuid';
+import React, { useEffect } from 'react';
+import { Form, Input, Button, Row, Col, FormInstance } from 'antd';
+import { RulesetFormData } from '../../interfaces/ruleset';
 
 type RulesetFormProps = {
-  currentRuleset: any;
-  createRuleset: (submitType: string) => void;
-  rulesetForm: FormInstance<any>;
+  currentRuleset: RulesetFormData | null;
+  rulesetForm: FormInstance<RulesetFormData>;
   editRuleSet: ({ record }: any) => void;
+  createRuleset: (submitType: 'submit' | 'draft') => void;
 };
 const RulesetForm = (props: RulesetFormProps) => {
   const { currentRuleset, rulesetForm, createRuleset, editRuleSet } = props;
@@ -18,7 +18,7 @@ const RulesetForm = (props: RulesetFormProps) => {
   }, []);
 
   return (
-    <Form layout='vertical' form={rulesetForm} name='rulesetForm' onFinish={createRuleset}>
+    <Form layout='vertical' form={rulesetForm} name='rulesetForm'>
       <Row gutter={16}>
         <Col span={12}>
           <Form.Item
