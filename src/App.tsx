@@ -2,6 +2,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Layout } from 'antd';
+import NiceModal from '@ebay/nice-modal-react';
 import Entity from './pages/entity/entity';
 import Rule from './pages/rule/rule';
 import RuleSet from './pages/ruleSet/ruleset';
@@ -17,12 +18,14 @@ const App: React.FC = () => {
         <Sidebar />
         <Layout>
           <Content style={{ margin: '16px' }}>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/entity" element={<Entity />} />
-              <Route path="/ruleset" element={<RuleSet />} />
-              <Route path="/rule" element={<Rule />} />
-            </Routes>
+            <NiceModal.Provider>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/entity" element={<Entity />} />
+                <Route path="/ruleset" element={<RuleSet />} />
+                <Route path="/rule" element={<Rule />} />
+              </Routes>
+            </NiceModal.Provider>
           </Content>
         </Layout>
       </Layout>

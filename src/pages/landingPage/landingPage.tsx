@@ -21,7 +21,8 @@ const LandingPage = () => {
           color: '#292d34',
           fontWeight: 300,
 
-        }} className={styles.productName}>Data Quality</Title>
+        }} className={styles.productName}>
+          <span></span>Data Quality</Title>
         <Title style={{
           fontWeight: 400,
           fontSize: '1.15rem'
