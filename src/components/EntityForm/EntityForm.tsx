@@ -4,22 +4,23 @@ import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import { ENTITY_TEMPLATES, ENTITY_TEMPLATE_PROPERTIES } from '../../data';
 import { IEntityTemplate, IGroupedOption } from '../../interfaces';
 import { formatString } from '../../common/utilities/utils';
+import { ACTIONS, submitButtonName } from '../../common/constants';
 
 const { Option, OptGroup } = Select;
 
 type EntityFormProps = {
   setIsModalVisible: Dispatch<SetStateAction<boolean>>;
-  setData: Dispatch<SetStateAction<any>>;
+  setEntity: Dispatch<SetStateAction<any>>;
   entityToEdit?: any; // You should type this according to the shape of the entity you expect
+  action: ACTIONS;
 };
 
 const EntityForm = (props: EntityFormProps) => {
-  const { setIsModalVisible, setData, entityToEdit } = props;
+  const { setIsModalVisible, setEntity, entityToEdit, action } = props;
   const [form] = Form.useForm();
 
   useEffect(() => {
     // Check if there is an entity to edit and set the form fields
-    console.log(entityToEdit);
     if (entityToEdit) {
       form.setFieldsValue(entityToEdit);
     }
@@ -29,10 +30,9 @@ const EntityForm = (props: EntityFormProps) => {
   }, [entityToEdit, form]);
 
   const handleSubmit = (values: any) => {
-    console.log(values);
     let allData = JSON.parse(localStorage.getItem('entities') || '[]');
 
-    if (entityToEdit) {
+    if (action === ACTIONS.EDIT) {
       // Find the index of the entity to edit and update it
       const index = allData.findIndex((entity: any) => entity.id === entityToEdit.id);
       allData[index] = { ...entityToEdit, ...values };
@@ -40,12 +40,12 @@ const EntityForm = (props: EntityFormProps) => {
     } else {
       // If we're creating a new entity, add it to the array
       allData.push({ id: Date.now(), ...values });
-      message.success('Entity created successfully!');
+      message.success(`Entity ${action === ACTIONS.CREATE ? 'created' : 'cloned'} successfully!`);
     }
 
     localStorage.setItem('entities', JSON.stringify(allData));
     setIsModalVisible(false);
-    setData(allData);
+    setEntity(allData);
     form.resetFields();
   };
 
@@ -239,7 +239,7 @@ const EntityForm = (props: EntityFormProps) => {
           </Form.Item>
           <Form.Item>
             <Button type='primary' htmlType='submit' style={{ float: 'right' }}>
-              {entityToEdit ? 'Update' : 'Submit'}
+              {submitButtonName[action]}
             </Button>
           </Form.Item>
         </Space>
