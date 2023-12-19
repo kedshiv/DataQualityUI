@@ -16,6 +16,7 @@ import styles from './ruleset.module.scss';
 import RulesetForm from '../../components/RulesetForm/RulesetForm';
 import { v4 as uuidv4 } from 'uuid';
 import { RulesetFormData } from '../../interfaces/ruleset';
+import { ACTIONS, modalTitle } from '../../common/constants';
 
 const { Text } = Typography;
 
@@ -23,6 +24,7 @@ const RuleSet = () => {
   const [ruleset, setRuleset] = useState<Array<RulesetFormData>>([]);
   const [currentRuleset, setCurrentRuleSet] = useState<RulesetFormData | null>(null);
   const [rulesetForm] = Form.useForm();
+  const [action, setAction] = useState<ACTIONS>(ACTIONS.CREATE);
   const [searchText, setSearchText] = useState('');
   const [filteredData, setFilteredData] = useState<Array<RulesetFormData>>([]);
 
@@ -34,7 +36,7 @@ const RuleSet = () => {
     setFilteredData(filteredRules);
   };
 
-  const createRuleset = (submitType: 'submit' | 'draft') => {
+  const createRuleset = () => {
     rulesetForm
       .validateFields()
       .then(() => {
@@ -130,6 +132,16 @@ const RuleSet = () => {
         <Space size='middle'>
           <a
             onClick={() => {
+              setAction(ACTIONS.CLONE);
+              setCurrentRuleSet(record);
+              showModal();
+            }}
+          >
+            Clone
+          </a>
+          <a
+            onClick={() => {
+              setAction(ACTIONS.EDIT);
               setCurrentRuleSet(record);
               showModal();
             }}
@@ -182,6 +194,7 @@ const RuleSet = () => {
   };
 
   const handleCancel = () => {
+    rulesetForm.resetFields();
     setIsModalVisible(false);
   };
 
@@ -192,6 +205,7 @@ const RuleSet = () => {
           type='primary'
           onClick={() => {
             setCurrentRuleSet(null);
+            setAction(ACTIONS.CREATE);
             showModal();
           }}
           className={styles.createButton}
@@ -210,7 +224,7 @@ const RuleSet = () => {
       </div>
 
       <Modal
-        title='Create Ruleset'
+        title={`${modalTitle[action]} Ruleset`}
         open={isModalVisible}
         onCancel={handleCancel}
         width={'70%'}
@@ -218,9 +232,12 @@ const RuleSet = () => {
         footer={null}
       >
         <RulesetForm
+          key={uuidv4()}
+          action={action}
           editRuleSet={editRuleSet}
           rulesetForm={rulesetForm}
           createRuleset={createRuleset}
+          setCurrentRuleSet={setCurrentRuleSet}
           currentRuleset={currentRuleset}
         />
       </Modal>

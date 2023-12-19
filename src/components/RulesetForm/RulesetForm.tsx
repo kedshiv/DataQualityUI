@@ -1,19 +1,25 @@
 import React, { useEffect } from 'react';
 import { Form, Input, Button, Row, Col, FormInstance, Space, Checkbox } from 'antd';
 import { RulesetFormData } from '../../interfaces/ruleset';
+import { ACTIONS, submitButtonName } from '../../common/constants';
 
 type RulesetFormProps = {
   currentRuleset: RulesetFormData | null;
   rulesetForm: FormInstance<RulesetFormData>;
   editRuleSet: ({ record }: any) => void;
-  createRuleset: (submitType: 'submit' | 'draft') => void;
+  createRuleset: () => void;
+  action: ACTIONS;
+  setCurrentRuleSet: any;
 };
 const RulesetForm = (props: RulesetFormProps) => {
-  const { currentRuleset, rulesetForm, createRuleset, editRuleSet } = props;
-
+  const { currentRuleset, rulesetForm, createRuleset, editRuleSet, action, setCurrentRuleSet } =
+    props;
   useEffect(() => {
     if (currentRuleset) {
-      rulesetForm.setFieldsValue(currentRuleset);
+      rulesetForm.setFieldsValue({
+        ...currentRuleset,
+        ...(action === ACTIONS.CLONE && { ruleSetName: `${currentRuleset.ruleSetName}_clone` }),
+      });
     }
   }, []);
 
@@ -82,9 +88,9 @@ const RulesetForm = (props: RulesetFormProps) => {
               type='primary'
               htmlType='submit'
               style={{ float: 'right' }}
-              onClick={currentRuleset ? editRuleSet : () => createRuleset('submit')}
+              onClick={action === ACTIONS.EDIT ? editRuleSet : createRuleset}
             >
-              {currentRuleset ? 'Update' : 'Submit'}
+              {submitButtonName[action]}
             </Button>
           </Form.Item>
         </Space>

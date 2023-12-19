@@ -1,28 +1,47 @@
 import { useEffect, useState } from 'react';
-import { Table, Button, Modal, Space, message, Popconfirm, Typography, Tag } from 'antd';
+import {
+  Table,
+  Button,
+  Modal,
+  Space,
+  message,
+  Popconfirm,
+  Typography,
+  Tag,
+  Row,
+  Input,
+} from 'antd';
 import styles from './entity.module.scss';
 import EntityForm from '../../components/EntityForm/EntityForm';
 import { formatString } from '../../common/utilities/utils';
 import NiceModal from '@ebay/nice-modal-react';
-import { IEntity, IEntityTemplate } from '../../interfaces';
+import { IEntity } from '../../interfaces';
 import EntityDetailsModal from '../../components/EntityDetails/EntityDetailsModal';
+import { ACTIONS, modalTitle } from '../../common/constants';
 
 const { Text } = Typography;
 
 const Entity = () => {
-  const [data, setData] = useState<IEntity[]>([]);
+  const [entity, setEntity] = useState<IEntity[]>([]);
   const [editingEntity, setEditingEntity] = useState<IEntity | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-
+  const [action, setAction] = useState<ACTIONS>(ACTIONS.CREATE);
+  const [searchText, setSearchText] = useState('');
+  const [filteredEntities, setFilteredEntities] = useState(entity);
   useEffect(() => {
     // Load saved enttities from localStorage
     const savedData = localStorage.getItem('entities');
     if (savedData) {
-      setData(JSON.parse(savedData));
+      setEntity(JSON.parse(savedData));
     }
   }, []);
 
+  useEffect(() => {
+    setFilteredEntities(entity);
+  }, [entity]);
+
   const showModal = () => {
+    setAction(ACTIONS.CREATE);
     setIsModalVisible(true);
   };
 
@@ -31,12 +50,25 @@ const Entity = () => {
     setIsModalVisible(false);
   };
 
+  const handleSearch = (text: string) => {
+    setSearchText(text);
+    const filteredEntities = entity.filter((data: IEntity) =>
+      data.entityName.toLowerCase().includes(text.toLowerCase())
+    );
+    setFilteredEntities(filteredEntities);
+  };
+
   const showEntityDetails = (entity: any) => {
     NiceModal.show(EntityDetailsModal, { entity });
   };
 
-  const editEntityModal = (entity: IEntity) => {
-    setEditingEntity(entity); // Set the entity to edit
+  const editOrCloneEntityModal = (entity: IEntity, action: ACTIONS) => {
+    setAction(action);
+    const entityDetails = {
+      ...entity,
+      ...(action === ACTIONS.CLONE && { entityName: `${entity.entityName}_clone` }),
+    };
+    setEditingEntity(entityDetails); // Set the entity to edit
     setIsModalVisible(true); // Show the form modal
   };
 
@@ -48,7 +80,7 @@ const Entity = () => {
         (ent: IEntity) => ent.entityName !== entity.entityName
       );
       localStorage.setItem('entities', JSON.stringify(filteredEntities));
-      setData(filteredEntities);
+      setEntity(filteredEntities);
       message.success('Entity deleted successfully!');
     }
   };
@@ -87,9 +119,10 @@ const Entity = () => {
       render: (record: IEntity) => (
         <Space size='middle'>
           <a onClick={() => showEntityDetails(record)}>View</a>
+          <a onClick={() => editOrCloneEntityModal(record, ACTIONS.CLONE)}>clone</a>
           <a
             onClick={() => {
-              editEntityModal(record);
+              editOrCloneEntityModal(record, ACTIONS.EDIT);
             }}
           >
             Edit
@@ -113,20 +146,31 @@ const Entity = () => {
 
   return (
     <div>
-      <Button type='primary' onClick={showModal} className={styles.createButton}>
-        Create Entity
-      </Button>
-      <Table columns={columns} dataSource={data} />
+      <Row style={{ float: 'right' }}>
+        <Button type='primary' onClick={showModal} className={styles.createButton}>
+          Create Entity
+        </Button>
+      </Row>
+      <div>
+        <Input
+          placeholder='Search Entity Name'
+          value={searchText}
+          onChange={e => handleSearch(e.target.value)}
+          style={{ width: 300 }}
+        />
+        <Table columns={columns} dataSource={filteredEntities} />
+      </div>
       <Modal
-        title={editingEntity ? 'Edit Entity' : 'Create Entity'}
-        visible={isModalVisible}
+        title={`${modalTitle[action]} entity`}
+        open={isModalVisible}
         onCancel={handleCancel}
         width={'70%'}
         footer={null}
       >
         <EntityForm
+          action={action}
           setIsModalVisible={setIsModalVisible}
-          setData={setData}
+          setEntity={setEntity}
           entityToEdit={editingEntity}
         />
       </Modal>

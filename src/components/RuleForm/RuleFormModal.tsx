@@ -19,6 +19,7 @@ import { CreateRule } from '../../pages/rule/rule';
 import { RuleFormData } from '../../interfaces/rule';
 import { IEntity } from '../../interfaces';
 import { formatString } from '../../common/utilities/utils';
+import { ACTIONS, modalTitle, submitButtonName } from '../../common/constants';
 
 const { Option } = Select;
 type RulesetFormProps = {
@@ -27,11 +28,13 @@ type RulesetFormProps = {
   handleCancel: () => void;
   editRule: ({ record }: { record?: RuleFormData }) => void;
   ruleForm: FormInstance<RuleFormData>;
-  createRule: ({ submitType, record }: CreateRule) => void;
+  createRule: () => void;
+  action: ACTIONS;
 };
 
 const RuleFormModal = (props: RulesetFormProps) => {
-  const { currentRule, isModalVisible, handleCancel, editRule, ruleForm, createRule } = props;
+  const { currentRule, isModalVisible, handleCancel, editRule, ruleForm, createRule, action } =
+    props;
   const [availableDQMetics, setAvailableDQMetics] = useState<string[]>([]);
   const [entities, setEntity] = useState<Array<IEntity>>([]);
   const [ruleset, setRuleset] = useState<any>([]);
@@ -39,7 +42,10 @@ const RuleFormModal = (props: RulesetFormProps) => {
 
   useEffect(() => {
     if (currentRule) {
-      ruleForm.setFieldsValue(currentRule);
+      ruleForm.setFieldsValue({
+        ...currentRule,
+        ...(action === ACTIONS.CLONE && { ruleName: `${currentRule.ruleName}_clone` }),
+      });
     }
     const entity = localStorage.getItem('entities');
     if (entity) {
@@ -106,7 +112,7 @@ const RuleFormModal = (props: RulesetFormProps) => {
   );
   return (
     <Modal
-      title='Create Rule'
+      title={`${modalTitle[action]} Rule`}
       open={isModalVisible}
       onCancel={handleCancel}
       width={'70%'}
@@ -341,12 +347,12 @@ const RuleFormModal = (props: RulesetFormProps) => {
                 htmlType='submit'
                 style={{ float: 'right' }}
                 onClick={
-                  currentRule
+                  action === ACTIONS.EDIT
                     ? () => editRule({ record: undefined })
-                    : () => createRule({ submitType: 'submit' })
+                    : () => createRule()
                 }
               >
-                {currentRule ? 'Update' : 'Submit'}
+                {submitButtonName[action]}
               </Button>
             </Form.Item>
           </Space>

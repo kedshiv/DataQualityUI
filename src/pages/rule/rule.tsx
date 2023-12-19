@@ -6,6 +6,7 @@ import RuleDetailsModal from '../../components/RuleForm/RuleDetailsModal';
 import RuleFormModal from '../../components/RuleForm/RuleFormModal';
 import { RuleFormData } from '../../interfaces/rule';
 import { formatString } from '../../common/utilities/utils';
+import { ACTIONS, modalTitle } from '../../common/constants';
 
 const { Text } = Typography;
 
@@ -21,6 +22,7 @@ const Rule = () => {
   const [searchText, setSearchText] = useState('');
   const [filteredData, setFilteredData] = useState(rule);
   const [ruleForm] = Form.useForm<RuleFormData>();
+  const [action, setAction] = useState<ACTIONS>(ACTIONS.CREATE);
 
   const handleSearch = (text: string) => {
     setSearchText(text);
@@ -60,12 +62,12 @@ const Rule = () => {
       });
   };
 
-  const createRule = ({ submitType, record = undefined }: CreateRule) => {
+  const createRule = () => {
     ruleForm
       .validateFields()
       .then(() => {
         const savedData = localStorage.getItem('rule');
-        const values = record ? record : ruleForm.getFieldsValue();
+        const values = ruleForm.getFieldsValue();
         let allData = [];
         if (savedData) {
           allData = JSON.parse(savedData);
@@ -125,6 +127,15 @@ const Rule = () => {
         <Space size='middle'>
           <a
             onClick={() => {
+              setAction(ACTIONS.CLONE);
+              setCurrentRule(record);
+              showRuleFormModal();
+            }}
+          >
+            Clone
+          </a>
+          <a
+            onClick={() => {
               setCurrentRule(record);
               showRuleModalDetails();
             }}
@@ -133,6 +144,7 @@ const Rule = () => {
           </a>
           <a
             onClick={() => {
+              setAction(ACTIONS.EDIT);
               setCurrentRule(record);
               showRuleFormModal();
             }}
@@ -183,6 +195,7 @@ const Rule = () => {
   };
 
   const handleCancel = () => {
+    ruleForm.resetFields();
     setIsModalVisible(false);
   };
 
@@ -200,6 +213,7 @@ const Rule = () => {
         <Button
           type='primary'
           onClick={() => {
+            setAction(ACTIONS.CREATE);
             setCurrentRule(null);
             showRuleFormModal();
           }}
@@ -219,6 +233,7 @@ const Rule = () => {
       </div>
 
       <RuleFormModal
+        action={action}
         createRule={createRule}
         editRule={editRule}
         ruleForm={ruleForm}
